@@ -205,8 +205,7 @@ void *retiro(void *args)
             }
         }
     }
-    sleep(3);
-    pthread_exit(&(ps->message));
+    printf("%s\n\n",ps->message.c_str());
 }
 
 // Subrutina que realiza un pago al banco, a la vez que actualiza la deuda del usuario.
@@ -234,12 +233,12 @@ void *pago(void *args)
                     userList[i].amount = userList[i].amount - (ps->amount);
                     userList[i].pendingAmount = userList[i].pendingAmount - (ps->amount);
                     pthread_mutex_unlock(&mtx);
-                    (ps->message) = "\n--------------------------------------------------\nPago realizado con exito, su nueva deudaes de " + to_string(userList[i].pendingAmount) +"\nEstimad@ "+ userList[i].name + ", le quedan: " + to_string(userList[i].amount) + " quetzales en su cuenta\n--------------------------------------------------";
+                    (ps->message) = "\n--------------------------------------------------\nPago realizado con exito, su nueva deuda es de " + to_string(userList[i].pendingAmount) +"\nEstimad@ "+ userList[i].name + ", le quedan: " + to_string(userList[i].amount) + " quetzales en su cuenta\n--------------------------------------------------";
                     sem_post(&semaforo);
             }
         }
     }
-    pthread_exit(&(ps->message));
+    printf("%s\n\n",ps->message.c_str());
 }
 
 // Subrutina que solicita un prestamo al banco, a la vez que actualiza los fondos del un usuario.
@@ -269,7 +268,7 @@ void *prestamo(void *args)
             }
         }
     }
-    pthread_exit(&(ps->message));
+    printf("%s\n\n",ps->message.c_str());
 }
 
 // Subrutina que realiza la transferencia de fondos entre usuarios.
@@ -303,7 +302,7 @@ void *transf(void *args)
             }
         }
     }
-    pthread_exit(&(ps->message));
+    printf("%s\n\n",ps->message.c_str());
 }
 
 // Funcion principal
@@ -332,7 +331,7 @@ int main()
     //string menu2 = "\n------------------------------------------------\nPor favor, selecciona una opcion:\n1. Retiro de efectivo\n2. Transferencia a otro usuario\n3. Salir\n------------------------------------------------\n";
 
     // Menu de repeticion
-    string menuFinal = "\n--------------------------------------------------\n¿Desea realizar otra accion?\n1. Si\n2. No\n--------------------------------------------------\n";
+    string menuFinal = "\n--------------------------------------------------\nDesea realizar otra accion?\n1. Si\n2. No\n--------------------------------------------------\n";
 
     // Este bloque se ejecutara siempre que la variable repeatAll sea true
     while (repeatAll)
@@ -502,20 +501,26 @@ int main()
             for(int i=0; i<opRegistradas; i++){
                 operation action = operationList[i];
                 long rc;
-                if(action.type == 100)
+                if(action.type == 100){
                     rc = pthread_create(&hilos[i], NULL, retiro, (void *)&action);
+                    sleep(1);
+                }
                 else if(action.type == 200){
                     rc = pthread_create(&hilos[i], NULL, pago, (void *)&action);
+                    sleep(1);
                 }
-                else if(action.type == 300)
+                else if(action.type == 300){
                     rc = pthread_create(&hilos[i], NULL, prestamo, (void *)&action);
-                else if(action.type == 400)
+                    sleep(1);
+                }
+                else if(action.type == 400){
                     rc = pthread_create(&hilos[i], NULL, transf, (void *)&action);
+                    sleep(1);
+                }
             }
 
-            for(int i= 0; i<opRegistradas;i++){
-                pthread_join(hilos[i], (void **)&results[i]);
-                printf("%s\n",(*results[i]).c_str());
+            for(int i= opRegistradas-1; i>=0;i--){
+                pthread_join(hilos[i], NULL);
             }
             printf("Sesion terminada exitosamente con codigo: %d", generateNumber(6));
             //Se pregunta al usuario si desea realizar alguna accion mas en el cajero
