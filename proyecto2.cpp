@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------
 * UNIVERSIDAD DEL VALLE DE GUATEMALA
-* FACULTAD DE INGENIERi
+* FACULTAD DE INGENIERiA
 * DEPARTAMENTO DE CIENCIA DE LA COMPUTACIoN
 *
 * Curso:       CC3086 - Programacion de microprocesadores     Ciclo II - 2022
@@ -223,21 +223,23 @@ void *pago(void *args)
         {
             if ((ps->originAccount) == userList[i].account)
             {
-                pthread_mutex_lock(&mtx);
-                if(ps->amount > userList[i].pendingAmount){
-
-                }else{
+                if((ps->amount) > userList[i].pendingAmount){
                     (ps->message) = "Error: Esta intentando abonar una cantidad mayor a la que debe.";
-                }
+                    if(userList[i].pendingAmount == 0){
+                        (ps-> message) = "No tiene deudas pendientes por pagar";
+                    }
+                }else{
+                    pthread_mutex_lock(&mtx);
                     atmAmount = atmAmount + (ps->amount);
                     userList[i].amount = userList[i].amount - (ps->amount);
                     userList[i].pendingAmount = userList[i].pendingAmount - (ps->amount);
                     pthread_mutex_unlock(&mtx);
                     (ps->message) = "\n--------------------------------------------------\nPago realizado con exito, su nueva deuda es de " + to_string(userList[i].pendingAmount) +"\nEstimad@ "+ userList[i].name + ", le quedan: " + to_string(userList[i].amount) + " quetzales en su cuenta\n--------------------------------------------------";
-                    sem_post(&semaforo);
+                }
             }
         }
     }
+    sem_post(&semaforo);
     printf("%s\n\n",ps->message.c_str());
 }
 
